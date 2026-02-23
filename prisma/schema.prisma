@@ -1,0 +1,281 @@
+// =============================================================
+// Virtual Homeschool LMS - Prisma Schema
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================
+// ENUMS
+// =============================================================
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Curriculum {
+  IGCSE
+  CBC
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADED
+  RETURNED
+  LATE
+}
+
+enum Term {
+  TERM_1
+  TERM_2
+  TERM_3
+}
+
+enum AnnouncementTarget {
+  ALL
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+// =============================================================
+// MODELS
+// =============================================================
+
+model User {
+  id         String     @id @default(cuid())
+  name       String
+  email      String     @unique
+  password   String
+  role       Role       @default(STUDENT)
+  curriculum Curriculum?
+  avatar     String?
+  phone      String?
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  class                Class?         @relation("StudentClass", fields: [classId], references: [id])
+  classId              String?
+  taughtClasses        ClassTeacher[]
+  uploadedNotes        Note[]
+  createdAssignments   Assignment[]
+  createdMeetings      Meeting[]
+  gradedSubmissions    Grade[]
+  createdAnnouncements Announcement[]
+  submissions          Submission[]
+
+  @@map("users")
+}
+
+model Class {
+  id          String     @id @default(cuid())
+  name        String
+  curriculum  Curriculum
+  gradeLevel  String
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  students    User[]         @relation("StudentClass")
+  teachers    ClassTeacher[]
+  subjects    ClassSubject[]
+  notes       Note[]
+  assignments Assignment[]
+  meetings    Meeting[]
+
+  @@map("classes")
+}
+
+model ClassTeacher {
+  id        String   @id @default(cuid())
+  classId   String
+  teacherId String
+  createdAt DateTime @default(now())
+
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher User  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, teacherId])
+  @@map("class_teachers")
+}
+
+model Subject {
+  id          String     @id @default(cuid())
+  name        String
+  curriculum  Curriculum
+  description String?
+  code        String?    @unique
+  color       String?    @default("#7C3AED")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  classes     ClassSubject[]
+  notes       Note[]
+  assignments Assignment[]
+  meetings    Meeting[]
+
+  @@map("subjects")
+}
+
+model ClassSubject {
+  id        String   @id @default(cuid())
+  classId   String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, subjectId])
+  @@map("class_subjects")
+}
+
+model Note {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  content      String?  @db.Text
+  fileUrl      String?
+  filePublicId String?
+  fileName     String?
+  fileSize     Int?
+  term         Term     @default(TERM_1)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  teacherId String
+  classId   String
+  subjectId String
+
+  teacher User    @relation(fields: [teacherId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@map("notes")
+}
+
+model Assignment {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @db.Text
+  fileUrl      String?
+  filePublicId String?
+  fileName     String?
+  dueDate      DateTime
+  maxScore     Int      @default(100)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  teacherId String
+  classId   String
+  subjectId String
+
+  teacher     User         @relation(fields: [teacherId], references: [id])
+  class       Class        @relation(fields: [classId], references: [id])
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  submissions Submission[]
+
+  @@map("assignments")
+}
+
+model Submission {
+  id           String           @id @default(cuid())
+  fileUrl      String?
+  filePublicId String?
+  fileName     String?
+  fileSize     Int?
+  status       SubmissionStatus @default(SUBMITTED)
+  submittedAt  DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Relations
+  studentId    String
+  assignmentId String
+
+  student    User       @relation(fields: [studentId], references: [id])
+  assignment Assignment @relation(fields: [assignmentId], references: [id])
+  grade      Grade?
+
+  @@unique([studentId, assignmentId])
+  @@map("submissions")
+}
+
+model Grade {
+  id                 String   @id @default(cuid())
+  score              Float
+  maxScore           Float    @default(100)
+  feedback           String?  @db.Text
+  gradedFileUrl      String?
+  gradedFilePublicId String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  submissionId String     @unique
+  teacherId    String
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+  teacher    User       @relation(fields: [teacherId], references: [id])
+
+  @@map("grades")
+}
+
+model Meeting {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  meetingUrl  String
+  scheduledAt DateTime
+  duration    Int?
+  isActive    Boolean  @default(true)
+  platform    String?  @default("Google Meet")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  teacherId String
+  classId   String
+  subjectId String?
+
+  teacher User    @relation(fields: [teacherId], references: [id])
+  class   Class   @relation(fields: [classId], references: [id])
+  subject Subject? @relation(fields: [subjectId], references: [id])
+
+  @@map("meetings")
+}
+
+model Announcement {
+  id        String             @id @default(cuid())
+  title     String
+  content   String             @db.Text
+  target    AnnouncementTarget @default(ALL)
+  isPinned  Boolean            @default(false)
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  // Relations
+  authorId String
+
+  author User @relation(fields: [authorId], references: [id])
+
+  @@map("announcements")
+}

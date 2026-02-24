@@ -52,6 +52,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.20",
     "@testing-library/jest-dom": "^6.6.2",
     "@testing-library/react": "^16.0.1",
     "@types/bcryptjs": "^2.4.6",

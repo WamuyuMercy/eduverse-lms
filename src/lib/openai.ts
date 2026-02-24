@@ -5,9 +5,17 @@
 import OpenAI from "openai";
 import { QuizQuestion, GeneratedQuiz, NoteSummary, AIFeedbackSuggestion } from "@/types";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let _openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!_openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error("OPENAI_API_KEY is not configured");
+    }
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _openai;
+}
 
 const MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
@@ -46,7 +54,7 @@ Respond in this exact JSON format:
   ]
 }`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -85,7 +93,7 @@ Guidelines:
 - List 4-6 key points (the most important concepts)
 - Assess difficulty based on complexity of concepts`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -133,7 +141,7 @@ Respond in this exact JSON format:
   }
 }`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -172,7 +180,7 @@ The tips should be:
 Respond with a JSON array:
 {"tips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4", "Tip 5"]}`;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: MODEL,
     messages: [{ role: "user", content: prompt }],
     response_format: { type: "json_object" },
@@ -184,4 +192,4 @@ Respond with a JSON array:
   return result.tips as string[];
 }
 
-export { openai };
+export { getOpenAI as openai };

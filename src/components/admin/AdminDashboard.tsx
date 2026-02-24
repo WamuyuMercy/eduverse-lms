@@ -15,11 +15,22 @@ import { formatDate, getRoleBadgeColor, getCurriculumColor } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
+type RecentAnnouncement = {
+  id: string;
+  title: string;
+  content: string;
+  target: Announcement["target"];
+  isPinned: boolean;
+  isActive: boolean;
+  createdAt: Date;
+  author: { name: string };
+};
+
 interface AdminDashboardProps {
   adminName: string;
   stats: AdminStats;
   recentUsers: Pick<User, "id" | "name" | "email" | "role" | "curriculum" | "createdAt">[];
-  recentAnnouncements: (Announcement & { author: { name: string } })[];
+  recentAnnouncements: RecentAnnouncement[];
 }
 
 export function AdminDashboard({

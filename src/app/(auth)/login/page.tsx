@@ -212,38 +212,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-              Demo Credentials
-            </p>
-            <div className="space-y-2">
-              {[
-                {
-                  role: "Admin",
-                  email: "admin@eduverse.ac.ke",
-                  color: "text-purple-600",
-                },
-                {
-                  role: "Teacher",
-                  email: "j.waweru@eduverse.ac.ke",
-                  color: "text-blue-600",
-                },
-                {
-                  role: "Student",
-                  email: "amara.otieno@students.eduverse.ac.ke",
-                  color: "text-green-600",
-                },
-              ].map((cred) => (
-                <div key={cred.role} className="flex items-center justify-between text-xs">
-                  <span className={`font-semibold ${cred.color}`}>{cred.role}</span>
-                  <span className="text-gray-500 font-mono text-[11px]">{cred.email}</span>
-                </div>
-              ))}
-              <p className="text-xs text-gray-400 mt-1">Password: Password123!</p>
-            </div>
-          </div>
-
           <p className="text-center text-sm text-gray-400 mt-6">
             &copy; {new Date().getFullYear()} EduVerse LMS. All rights reserved.
           </p>

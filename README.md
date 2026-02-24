@@ -127,19 +127,9 @@ Visit `http://localhost:3000`
 
 ---
 
-## 🔑 Demo Credentials
+## 🔑 Demo Access
 
-After seeding, use these to log in:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@eduverse.ac.ke | Password123! |
-| Teacher (IGCSE) | j.waweru@eduverse.ac.ke | Password123! |
-| Teacher (IGCSE) | s.kamau@eduverse.ac.ke | Password123! |
-| Teacher (CBC) | g.odhiambo@eduverse.ac.ke | Password123! |
-| Teacher (CBC) | p.njoroge@eduverse.ac.ke | Password123! |
-| Student (IGCSE) | amara.otieno@students.eduverse.ac.ke | Password123! |
-| Student (CBC) | aisha.abdullahi@students.eduverse.ac.ke | Password123! |
+After seeding the database, contact the system administrator for login credentials. The seed script creates accounts for Admin, Teacher, and Student roles.
 
 ---
 
